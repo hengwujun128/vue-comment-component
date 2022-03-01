@@ -1,7 +1,9 @@
 <template>
   <div id="comment" ref="comment">
     <!-- 顶部评论表单 -->
+    <!-- 这里把 uploadImg prop传入到 下一层,可以使用 provide ,inject 来替换-->
     <comment-form :upload-img="uploadImg" @form-submit="formSubmit">
+      <!-- 有个默认的 slot 用来自定义用户头像 -->
       <img
         class="avatar"
         :src="user.avatar || ''"
@@ -9,7 +11,7 @@
       />
     </comment-form>
 
-    <!-- 底部评论列表 -->
+    <!-- 底部评论列表: wrapper -->
     <comment-list v-if="cacheData.length > 0" ref="comment-list">
       <!-- 单条评论 -->
       <comment-item
@@ -23,8 +25,13 @@
         @comment-like="handleCommentLike"
         @comment-delete="handleCommentDelete"
       >
-        <!-- 回复表单 -->
+        <template #userMeta>
+          hello123
+        </template>
+        <!-- 回复表单: 每条评论item 都有自己的回复表单 -->
         <template #default="{ id }">
+          <bold> {{ i }} </bold>
+
           <comment-form
             v-if="forms.includes(id)"
             :id="id"
@@ -36,7 +43,7 @@
           />
         </template>
 
-        <!-- 单条评论下的回复列表 -->
+        <!-- 单条评论下的回复列表: -->
         <template #subList="{ parentId }">
           <comment-list sub>
             <!-- 单条回复 -->
@@ -84,7 +91,7 @@ export default {
     event: 'input',
   },
   props: {
-    /* 数据 */
+    /* 外部传入的数据源 */
     data: {
       type: Array,
       default: () => [],
@@ -136,7 +143,8 @@ export default {
     },
   },
   created() {
-    // 监听并执行一次
+    // 监听并执行一次: 这里监听外部传入的数据源,watch的高级用法: 
+    // vm.$watch 返回一个取消观察函数，用来停止触发回调：
     const cancel = this.$watch('data', () => {
       this.processData()
       cancel && cancel()
@@ -165,12 +173,12 @@ export default {
         liked: false,
       }
 
-      // 赋值
+      // 赋值: 先使用自定义的 key,在使用数据源中的 key,  最后就使用默认值空值赋值
       for (const key in originObj) {
         originObj[key] =
           comment[this.props[key]] || comment[key] || originObj[key]
 
-        // 校验
+        // 校验 :使用策略模式进行
         this.validate({ key, value: originObj[key] })
       }
 

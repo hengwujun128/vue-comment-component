@@ -5,7 +5,9 @@
     </div>
 
     <div class="form-box">
-      <div class="rich-input" :class="{ focus: focus || value }">
+      <!-- focus style -->
+      <div class="rich-input" :class="{ focus: true || value }">
+        <!-- 文本框区域 -->
         <div class="grow-wrap" :data-replicated-value="value">
           <textarea
             ref="input"
@@ -18,6 +20,7 @@
             @mousedown="closeEmojiSelector"
           />
         </div>
+        <!-- 图片展示区域: 用户上传了图片,要在这里做展示 -->
         <div v-show="imgSrc" ref="image-preview-box" class="image-preview-box">
           <div
             v-show="imgSrc"
@@ -50,8 +53,9 @@
           </div>
         </div>
       </div>
+      <!-- focused:  鼠标聚焦,展示图片和表情按钮-->
       <div
-        v-show="focus || value || imgSrc"
+        v-show="true || value || imgSrc"
         class="option-box"
         @mousedown.prevent="closeEmojiSelector($refs.input.focus())"
       >
@@ -63,11 +67,13 @@
             <div class="icon" />
             <span>表情</span>
           </div>
+          <!-- 表情包 -->
           <EmojiSelector
             v-show="showEmojiSelector"
             @choose="(v) => (value += v)"
           />
         </div>
+        <!-- todo:上传图片容器, 在最外层容器中绑定事件(事件代理),然后来触发子元素click事件(等同于用户click) input 上传-->
         <div class="image-btn" @mousedown.prevent="triggerUpload">
           <svg
             aria-hidden="true"
@@ -89,6 +95,7 @@
             </g>
           </svg>
           <span>图片</span>
+          <!--  -->
           <input
             ref="upload"
             class="upload-file"
@@ -121,6 +128,7 @@ export default {
       type: String,
       default: '输入评论...',
     },
+    // 就是每个评论列表的 item 都有自己的 commentForm
     id: {
       type: [String, Number],
       default: 'comment-root',
@@ -155,6 +163,7 @@ export default {
     isSub() {
       return this.id.split('-').length === 3
     },
+    // commentFrom 的 class: 'comment-root' | 'reply' | 'reply sub-reply'
     className() {
       return this.isRoot
         ? 'comment-root'
@@ -181,10 +190,11 @@ export default {
     },
     // * 处理图片
     async beforeSetImg(file) {
+      // type: "image/gif"
       if (!/^image/.test(file.type)) {
         throw new Error("file type must contain 'image'.")
       }
-
+      // 如果外部通过 props传入了回调函数钩子,就先调用钩子
       if (typeof this.uploadImg === 'function') {
         const callback = (src) => {
           this.imgSrc = src
@@ -192,7 +202,7 @@ export default {
         await this.uploadImg({ file, callback })
         return
       }
-
+      // 如果没有传入回调钩子,就直接使用 FileReader 把文件转成 DataURL
       const reader = new FileReader()
       reader.readAsDataURL(file)
       reader.onload = () => {
@@ -206,7 +216,9 @@ export default {
     },
     // * 点击图片触发上传
     triggerUpload() {
+      alert(this.onUpload)
       this.$refs.upload.click()
+      alert(this.onUpload)
     },
     // * 点击图片上的删除按钮
     removeImg() {
@@ -245,7 +257,7 @@ export default {
     handleSubmit() {
       if (!this.value.trim() && !this.imgSrc) return
       const user = (this.comment && this.comment.user) || null
-
+      // 组织评论数据
       const data = {
         id: this.id,
         content: this.value,
@@ -277,13 +289,14 @@ export default {
     // * 选择表情
     openEmojiSelector() {
       this.showEmojiSelector = !this.showEmojiSelector
-
+      // document.activeElement 返回当前 focus 的 dom 元素
       if (document.activeElement === document.body) {
         this.$refs.input.focus()
       }
       if (this.showEmojiSelector) {
         // 移动光标到末尾
         const input = this.$refs.input
+        // 设置选中区域的开始和结尾的位置
         input.selectionStart = input.selectionEnd = this.value.length
       }
     },

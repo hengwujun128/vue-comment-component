@@ -1,7 +1,9 @@
 <template>
   <div id="app">
     <div ref="header" class="change-role">
-      <div class="change" @click="changeUser">切换角色</div>
+      <div class="change" @click="changeUser">
+        切换角色
+      </div>
       <div class="current-role">
         <img :src="currentUser.avatar" />
         <span>{{
@@ -54,18 +56,19 @@ export default {
     ]
     return {
       data: [],
+      // 单条评论模型, 可以用于修改模型中的字段
       props: {
-        id: '_id',
-        content: 'content',
-        imgSrc: 'imgSrc',
-        children: 'childrenComments',
-        likes: 'likes',
-        liked: 'liked',
-        reply: 'reply',
-        createAt: 'createAt',
-        user: 'visitor',
+        id: '_id', // 唯一 id，必需
+        content: 'content', // 评论内容，必需
+        imgSrc: 'imgSrc', // 评论中的图片地址，非必需
+        children: 'childrenComments', // 子评论（回复），非必需
+        likes: 'likes', // 点赞数，非必需
+        liked: 'liked', // 是否已点赞，非必需
+        reply: 'reply', // 子评论（回复）人信息，非必需
+        createAt: 'createAt', // 评论时间，必需
+        user: 'visitor',  // 评论人信息，必需 ,可以是个 object
       },
-      currentUser: users[0],
+      currentUser: users[0], // 当前用户
       users,
       wrapStyle: '',
     }
@@ -74,6 +77,7 @@ export default {
     this.addData(1)
   },
   mounted() {
+    // 控制组件中的容器大小
     const header = this.$refs.header
     this.wrapStyle = `height: calc(100vh - ${header.clientHeight + 20}px)`
   },
@@ -100,6 +104,9 @@ export default {
       console.log('likeComment: ', res)
     },
 
+    /**
+    上传图片的回调函数,通过 porps 传递给子组件
+     */
     async uploadImg({ file, callback }) {
       const res = await new Promise((resolve, reject) => {
         const reader = new FileReader()
@@ -139,7 +146,9 @@ export default {
 
     addData(times) {
       setTimeout(() => {
+        //todo算法: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flat
         this.data = new Array(times).fill(EXAMPLE_DATA).flat(Infinity)
+        console.log(this.data)
       }, 0)
     },
   },

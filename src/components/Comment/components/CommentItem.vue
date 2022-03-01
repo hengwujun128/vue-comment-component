@@ -1,4 +1,5 @@
 <template>
+  <!-- 评论item 组件 -->
   <div class="comment-item" :class="{ 'sub-comment-item': isSubComment }">
     <div class="comment">
       <!-- 评论或回复人头像 -->
@@ -13,8 +14,7 @@
           <slot name="userMeta">
             <div class="user-popover-box">
               <span v-if="comment.user">{{
-                comment.user.name +
-                (comment.user.author === true ? '（作者）' : '')
+                comment.user.name +(comment.user.author === true ? '（作者）' : '')
               }}</span>
             </div>
           </slot>
@@ -22,8 +22,8 @@
 
         <!-- 评论或回复内容 -->
         <div class="content">
-          <span v-if="comment.reply" class="reply"
-            >回复
+          <!--todo:  通过 reply 字段判断当前是评论 item 还是回复 item -->
+          <span v-if="comment.reply" class="reply">回复
             <span class="reply-target" :title="comment.reply.email">{{
               comment.reply.name + '：'
             }}</span>
@@ -42,8 +42,10 @@
           <time
             :title="formatTime(comment.createAt, true)"
             :datetime="comment.createAt"
-            >{{ formatTime(comment.createAt) }}</time
           >
+            {{ formatTime(comment.createAt) }}
+          </time>
+          <!-- todo: 当前用户是作者本身,可以删除评论 -->
           <div
             v-if="user.author === true"
             class="delete"
@@ -100,10 +102,10 @@
           </div>
         </div>
 
-        <!-- 评论表单组件 -->
+        <!-- 评论表单组件插槽 -->
         <slot :id="id" />
 
-        <!-- 回复列表 -->
+        <!-- 回复列表插槽 -->
         <slot name="subList" :parentId="id" />
       </div>
     </div>
@@ -114,15 +116,18 @@
 export default {
   name: 'CommentItem',
   props: {
+    // 就是每个 item
     comment: {
       type: Object,
       default: () => {},
       required: true,
     },
+    // 
     id: {
       type: [String, Number],
       required: true,
     },
+    // 
     parent: {
       type: Object,
       default: () => {},
@@ -138,14 +143,15 @@ export default {
     },
   },
   methods: {
+    // todo
     formatTime(time, local = false) {
       const d = new Date(time)
 
       if (local) {
         return d.toString()
       }
-
-      const now = Date.now()
+      // 先换成时间戳
+      const now = Date.now() 
       const diff = (now - d) / 1000
 
       switch (true) {
